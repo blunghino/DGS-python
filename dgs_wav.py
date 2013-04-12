@@ -73,7 +73,7 @@
            United States Geological Survey
            Flagstaff, AZ 86001
            dbuscombe@usgs.gov
- Version: 1.1       Revision: Mar 3, 2013
+ Version: 1.1       Revision: Apr 11, 2013
  First Revision January 18 2013   
 
 '''
@@ -85,7 +85,7 @@ import os
 import glob
 import Image
 from scipy.signal import * # for polynomial fitting
-from scipy.misc import imresize # for image resizing
+#from scipy.misc import imresize # for image resizing
 import time
 
 ################################################################
@@ -362,7 +362,7 @@ class Morlet(Cwt):
         return xhat
 
 ################################################################
-def processimage( item, density, doplot, resolution ):
+def processimage( item, density, doplot, resolution, folder ):
     """
     main processing program which reads image and calculates grain size distribution
     """
@@ -380,8 +380,8 @@ def processimage( item, density, doplot, resolution ):
     nx, ny = np.shape(region)
 
     # resize image so it is half the size (to reduce computational time)
-    useregion= np.array(imresize(region,(( nx/2, ny/2 )))).T
-    nx, ny = np.shape(useregion)
+    #useregion= np.array(imresize(region,(( nx/2, ny/2 )))).T
+    #nx, ny = np.shape(useregion)
     mn=min(nx,ny)
 
     mult=6*int(float(100*(1/np.std(region.flatten()))))
@@ -393,10 +393,10 @@ def processimage( item, density, doplot, resolution ):
              window_size=(mn/4)
         else:
              window_size=(mn/4)-1
-        Zf = sgolay2d( useregion, window_size, order=4)
+        Zf = sgolay2d( region, window_size, order=3)
 
         # rescale filtered image to full 8-bit range
-        useregion =rescale(useregion-Zf,0,255)
+        useregion =rescale(region-Zf,0,255)
 
     except:
         print "flattening failed"
@@ -569,7 +569,7 @@ print "====IMAGE OF SEDIMENT/GRANULAR MATERIAL===="
 print "==========================================="
 print "======A PROGRAM BY DANIEL BUSCOMBE========="
 print "========USGS, FLAGSTAFF, ARIZONA==========="
-print "=========REVISION 1.1, MAR 2012============"
+print "=========REVISION 1.2, APR 2012============"
 print "==========================================="
 
 # handle inputs
@@ -586,7 +586,7 @@ if len(sys.argv) == 5: # all required arguments
 elif len(sys.argv) ==2: #only folder input
     # read input folder
     folder=sys.argv[1]
-    density=100
+    density=200
     doplot=0
     resolution=1  
     print 'Setting density to ', density
@@ -643,63 +643,63 @@ if files1:
    for item in files1:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count=count+1
 if files2:
    for item in files2:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count=count+1
 if files3:
    for item in files3:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count=count+1
 if files4:
    for item in files4:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count=count+1
 if files5:
    for item in files5:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count=count+1
 if files6:
    for item in files6:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count=count+1
 if files7:
    for item in files7:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count=count+1
 if files8:
    for item in files8:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count=count+1
 if files9:
    for item in files9:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count=count+1
 

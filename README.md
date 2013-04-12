@@ -4,7 +4,7 @@ Python software to calculate the grain size distribution from an image of sedime
 
 To run the program, download and unzip, open a terminal or your Python development environment (e.g. IDLE, Spyder), cd to the DGS-master directory, then execute the program (for example in the command window type):
 
-python dgs_wav.py
+python dgs_wav.py /my/sediment/images/directory
 
 This program implements the algorithm of 
 Buscombe, D. (2013, in review) 
