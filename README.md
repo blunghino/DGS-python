@@ -23,7 +23,7 @@ to report bugs and discuss the code, algorithm, collaborations
 For the latest code version please visit:
 https://github.com/dbuscombe-usgs
 
-Wee also the project blog: 
+See also the project blog: 
 http://dbuscombe-usgs.github.com/
 
 Please download, try, report bugs, fork, modify, evaluate, discuss. Thanks for stopping by!
