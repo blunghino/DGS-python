@@ -1,6 +1,5 @@
-
-# dgs_wav.py
-# wavelet-based digital grain size analysis
+# dgs_wav_p.py
+# wavelet-based digital grain size analysis (parallelised)
 # Written by Daniel Buscombe, various times in 2012 and 2013
 # while at
 # School of Marine Science and Engineering, University of Plymouth, UK
@@ -20,8 +19,8 @@
 #   http://www.usgs.gov/visual-id/credit_usgs.html#copyright
 #====================================
 '''
- DGS_WAVE.PY
- {D}IGITAL {G}RAIN {S}IZE - {WAV}ELET
+ DGS_WAVE_||.PY
+ {D}IGITAL {G}RAIN {S}IZE - {WAV}ELET _ {||} (parallel)
  Python function to compute estimates of grain size distribution 
  using the continuous wavelet transform method of Buscombe (2013)
  from an image of sediment where grains are clearly resolved
@@ -45,21 +44,20 @@
  EXAMPLES:
 
  1) process present working directory using defaults
- python dgs_wav.py -f pwd 
+ python dgs_wav_p.py -f pwd 
 
  2) process a folder somewhere on the computer
- python dgs_wav.py -f /home/my_sediment_images
+ python dgs_wav_p.py -f /home/my_sediment_images
 
  3) process a folder with a sample density of 50
- python dgs_wav.py -f /home/my_sediment_images -d 50 
+ python dgs_wav_p.py -f /home/my_sediment_images -d 50 
 
  4) process a folder with a sample density of 100, and do a plot for each image 
- python dgs_wav.py -f /home/my_sediment_images -d 50 -p 1
+ python dgs_wav_p.py -f /home/my_sediment_images -d 50 -p 1
 
  5) process a folder with a sample density of 100, don't do a plot for each image, and use mm/pixel resolution 0.05 
- python dgs_wav.py -f /home/my_sediment_images -d 50 -p 1 -r 0.05
+ python dgs_wav_p.py -f /home/my_sediment_images -d 50 -p 1 -r 0.05
 
- Note that the larger the density parameter, the longer the execution time. If a large density is required, please use the parallelised version of this code, dgs_wav_p.py which uses the joblib library. It should speed things up 10x or more if you have a number of processors 
 
  SOFTWARE REQUIREMENTS:
  1) Python (developed/tested using Python 2.7)
@@ -67,21 +65,24 @@
  3) Pylab  (developed/tested using the version which came with matplotlib.__version__ > 1.0.1)
  4) Scipy  (developed/tested using scipy.version.version > 0.9.0)
  5) PIL    (Python Imaging Library, developed/tested using Image.VERSION > 1.1.7)
+ 5) joblib (Lightweight piping library, https://pypi.python.org/pypi/joblib, developed/tested using joblib.__version__ = 0.6.4)
 
  Author:  Daniel Buscombe
            Grand Canyon Monitoring and Research Center
            United States Geological Survey
            Flagstaff, AZ 86001
            dbuscombe@usgs.gov
- Version: 2.0      Revision: October, 2013
- First Revision January 18 2013   
+ Version: 1.0      Revision: October, 2013
+ First Revision of dgs_wav.py: January 18 2013   
+ First Revision of dgs_wav_p.py: October 8 2013   
 
 '''
 
 import numpy as np
 import pylab as mpl
 import sys, getopt, os, glob, Image, time
-import scipy.signal as sp # for polynomial fitting
+import scipy.signal as sp
+from joblib import Parallel, delayed
 
 ################################################################
 ############## SUBFUNCTIONS ####################################
@@ -357,7 +358,7 @@ class Morlet(Cwt):
         return xhat
 
 ################################################################
-def processimage( item, density, doplot, resolution, folder ):
+def processimage( item, density, doplot, resolution, folder, numproc ):
     """
     main processing program which reads image and calculates grain size distribution
     """
@@ -410,43 +411,28 @@ def processimage( item, density, doplot, resolution, folder ):
     kr = kr[:np.asarray(np.fix((npad-1)/2), dtype=np.int)]
     k2 = np.hstack((0,k,kr))**2
 
+    # each row is treated using a separate queued job
     print 'analysing every ',density,' rows of a ',nx,' row image'
-    O1 = np.array([],np.float)
-    for k in range(1,nx-1,density):
-        # extract column from image
-        A = column(np.asarray(useregion), k)
-        # detrend the data
-        A = sp.detrend(A)
-        # pad detrended series to next power 2 
-        Y = pad2nxtpow2(A,ny)
-        # Wavelet transform the data
-        cw = wavelet(Y,maxscale,notes,scaling=scaling)     
-        cwt = cw.getdata()
-        # get rid of padding before returning
-        cwt = cwt[:,0:ny] 
-        scales = cw.getscales()
-        # get scaled power spectrum
-        wave = np.tile(1/scales, (ny,1)).T*(np.absolute(cwt)**2)
+    d = Parallel(n_jobs = numproc, verbose=10)(delayed(parallel_me)(column(np.asarray(useregion), k), ny, wavelet, maxscale, notes, scaling, k2, npad) for k in range(1,nx-1,density))
 
-        # smooth
-        twave = np.zeros(np.shape(wave)) 
-        snorm = scales/1.
-        for ii in range(0,np.shape(wave)[0]):
-            F = np.exp(-.5*(snorm[ii]**2)*k2)
-            smooth = np.fft.ifft(np.squeeze(F)*np.squeeze(np.fft.fft(wave[ii,:],npad)))
-            twave[ii,:] = smooth[:ny].real
+    A = column(np.asarray(useregion), 1)
+    # detrend the data
+    A = sp.detrend(A)
+    # pad detrended series to next power 2 
+    Y = pad2nxtpow2(A,ny)
+    # Wavelet transform the data
+    cw = wavelet(Y,maxscale,notes,scaling=scaling)     
+    cwt = cw.getdata()
+    # get rid of padding before returning
+    cwt = cwt[:,0:ny] 
+    scales = cw.getscales()    
+    del A, Y, cw, cwt
 
-        # store the variance of real part of the spectrum
-        dat = np.var(twave,axis=1)
-        dat = dat/sum(dat)
-        O1 = np.append(O1,np.squeeze(dat.T)) 
-
-    Or1 = np.reshape(O1, (-1,np.squeeze(np.shape(scales)))).T
+    Or1 = np.reshape(d, (-1,np.squeeze(np.shape(scales)))).T
     # column-wise variance, scaled
     varcwt1 = np.var(Or1,axis=1) 
     varcwt1 = varcwt1/np.sum(varcwt1)
     
-    #svarcwt = varcwt1
     svarcwt = varcwt1*sp.kaiser(len(varcwt1),mult)
     svarcwt = svarcwt/np.sum(svarcwt)
     
@@ -542,6 +528,36 @@ def ascol( arr ):
     if len( arr.shape ) == 1: arr = arr.reshape( ( arr.shape[0], 1 ) )
     return arr
 
+################################################################
+def parallel_me(A, ny, wavelet, maxscale, notes, scaling, k2, npad):
+   # extract column from image
+#   A = column(np.asarray(useregion), k)
+   # detrend the data
+   A = sp.detrend(A)
+   # pad detrended series to next power 2 
+   Y = pad2nxtpow2(A,ny)
+   # Wavelet transform the data
+   cw = wavelet(Y,maxscale,notes,scaling=scaling)     
+   cwt = cw.getdata()
+   # get rid of padding before returning
+   cwt = cwt[:,0:ny] 
+   scales = cw.getscales()
+   # get scaled power spectrum
+   wave = np.tile(1/scales, (ny,1)).T*(np.absolute(cwt)**2)
+
+   # smooth
+   twave = np.zeros(np.shape(wave)) 
+   snorm = scales/1.
+   for ii in range(0,np.shape(wave)[0]):
+       F = np.exp(-.5*(snorm[ii]**2)*k2)
+       smooth = np.fft.ifft(np.squeeze(F)*np.squeeze(np.fft.fft(wave[ii,:],npad)))
+       twave[ii,:] = smooth[:ny].real
+
+   # store the variance of real part of the spectrum
+   dat = np.var(twave,axis=1)
+   dat = dat/sum(dat)
+   return np.squeeze(dat.T) #O1
+
 
 ################################################################
 ############## MAIN PROGRAM ####################################
@@ -570,16 +586,17 @@ print "==========================================="
 argv = sys.argv[1:]
 folder = ''; density = ''
 doplot = ''; resolution = ''
+numproc = ''
 
 # parse inputs to variables
 try:
-   opts, args = getopt.getopt(argv,"hf:d:p:r:")
+   opts, args = getopt.getopt(argv,"hf:d:p:r:n:")
 except getopt.GetoptError:
-     print 'dgs_wav.py -f <folder> [[-d <density> -p < doplot (0=no, 1=yes)> -r <resolution (mm/pixel)> ]]'
+     print 'dgs_wav.py -f <folder> [[-d <density> -p < doplot (0=no, 1=yes)> -r <resolution (mm/pixel)> -n <number of processors> ]]'
      sys.exit(2)
 for opt, arg in opts:
    if opt == '-h':
-      print 'dgs_wav.py -f <folder> [[-d <density> -p < doplot (0=no, 1=yes)> -r <resolution (mm/pixel)> ]]'
+      print 'dgs_wav.py -f <folder> [[-d <density> -p < doplot (0=no, 1=yes)> -r <resolution (mm/pixel)> -n <number of processors> ]]'
       sys.exit()
    elif opt in ("-f"):
       folder = arg
@@ -589,6 +606,8 @@ for opt, arg in opts:
       doplot = arg
    elif opt in ("-r"):
       resolution = arg
+   elif opt in ("-n"):
+      numproc = arg
 
 # exit program if no input folder given
 if not folder:
@@ -607,9 +626,12 @@ if doplot:
 if resolution:
    resolution = np.asarray(resolution,float)
    print 'Resolution is '+str(resolution)
+if numproc:
+   numproc = np.asarray(numproc,int)
+   print 'Number of processors is '+str(numproc)
 
 if not density:
-   density = 200
+   density = 10
    print '[Default] Density is '+str(density)
 
 if not doplot:
@@ -619,6 +641,10 @@ if not doplot:
 if not resolution:
    resolution = 1
    print '[Default] Resolution is '+str(resolution)+' mm/pixel'
+
+if not numproc:
+   numproc = 4
+   print '[Default] Number of processors is '+str(numproc)
 
 # special case = pwd
 if folder=='pwd':
@@ -649,63 +675,63 @@ if files1:
    for item in files1:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder, numproc )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count = count+1
 if files2:
    for item in files2:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder, numproc )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count = count+1
 if files3:
    for item in files3:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder, numproc )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count = count+1
 if files4:
    for item in files4:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder, numproc )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count = count+1
 if files5:
    for item in files5:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder, numproc )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count = count+1
 if files6:
    for item in files6:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder, numproc )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count = count+1
 if files7:
    for item in files7:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder, numproc )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count = count+1
 if files8:
    for item in files8:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder, numproc )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count = count+1
 if files9:
    for item in files9:
         print "==========================================="
         print "Analysing "+item
-        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
+        sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder, numproc )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
         count = count+1
 
