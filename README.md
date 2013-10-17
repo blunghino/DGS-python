@@ -1,15 +1,10 @@
-<<<<<<< HEAD
- dgs_wav.py (serial version)
- dgs_wav_p.py (parallel version)
-=======
- dgs_wav.py
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+dgs_wav.py (serial version)
+dgs_wav_p.py (parallel version)
 
 Python software to calculate the grain size distribution from an image of sediment or other granular material
 
 To run the program, download and unzip, open a terminal or your Python development environment (e.g. IDLE, Spyder), cd to the DGS-master directory, then execute the program (for example in the command window type):
 
-<<<<<<< HEAD
 EXAMPLE:
 python dgs_wav.py -f /my/sediment/images/directory
 
@@ -20,15 +15,7 @@ python dgs_wav_p.py -f /my/sediment/images/directory -n 8
 
 This program implements the algorithm of 
 Buscombe, D. (2013, in press) Transferable Wavelet Method for Grain-Size Distribution from Images of Sediment Surfaces and Thin Sections, and Other Natural Granular Patterns, Sedimentology
-=======
-python dgs_wav.py /my/sediment/images/directory
 
-This program implements the algorithm of:
-
-Buscombe, D. (2013) Transferable Wavelet Method for Grain-Size Distribution from Images of Sediment Surfaces and Thin Sections, and Other Natural Granular Patterns
-Sedimentology, in press. DOI: 10.1111/sed.12049
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
- 
 Written by Daniel Buscombe, various times in 2012 and 2013
 while at
 School of Marine Science and Engineering, University of Plymouth, UK
