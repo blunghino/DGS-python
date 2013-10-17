@@ -1,9 +1,6 @@
 
-<<<<<<< HEAD
+
 # dgs_wav.py
-=======
-# dgswave.py
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
 # wavelet-based digital grain size analysis
 # Written by Daniel Buscombe, various times in 2012 and 2013
 # while at
@@ -23,10 +20,8 @@
 #   For more information, see the official USGS copyright policy at 
 #   http://www.usgs.gov/visual-id/credit_usgs.html#copyright
 #====================================
-<<<<<<< HEAD
 =======
 
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
 '''
  DGS_WAVE.PY
  {D}IGITAL {G}RAIN {S}IZE - {WAV}ELET
@@ -35,14 +30,12 @@
  from an image of sediment where grains are clearly resolved
  DOES NOT REQUIRE CALIBRATION
 
-<<<<<<< HEAD
 =======
 This program implements the algorithm of:
 
 Buscombe, D. (2013) Transferable Wavelet Method for Grain-Size Distribution from Images of Sediment Surfaces and Thin Sections, and Other Natural Granular Patterns
 Sedimentology, in press. DOI: 10.1111/sed.12049
 
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
  REQUIRED INPUTS:
  folder e.g. '/home/my_sediment_images'
  if 'pwd', then the present directory is analysed
@@ -61,7 +54,6 @@ Sedimentology, in press. DOI: 10.1111/sed.12049
  EXAMPLES:
 
  1) process present working directory using defaults
-<<<<<<< HEAD
  python dgs_wav.py -f pwd 
 
  2) process a folder somewhere on the computer
@@ -106,36 +98,22 @@ Sedimentology, in press. DOI: 10.1111/sed.12049
  3) Pylab  (developed/tested using the version which came with matplotlib.__version__ = 1.0.1)
  4) Scipy  (developed/tested using scipy.version.version=0.9.0)
  5) PIL    (Python Imaging Library, developed/tested using Image.VERSION=1.1.7)
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
 
  Author:  Daniel Buscombe
            Grand Canyon Monitoring and Research Center
            United States Geological Survey
            Flagstaff, AZ 86001
            dbuscombe@usgs.gov
-<<<<<<< HEAD
  Version: 2.0      Revision: October, 2013
-=======
- Version: 1.1      Revision: Apr 11, 2013
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
  First Revision January 18 2013   
 
 '''
 
 import numpy as np
 import pylab as mpl
-<<<<<<< HEAD
 import sys, getopt, os, glob, Image, time
 import scipy.signal as sp # for polynomial fitting
-=======
-import sys 
-import os
-import glob
-import Image
-from scipy.signal import * # for polynomial fitting
-#from scipy.misc import imresize # for image resizing
-import time
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
 
 ################################################################
 ############## SUBFUNCTIONS ####################################
@@ -219,39 +197,32 @@ def sgolay2d ( z, window_size, order, derivative=None):
         m = np.linalg.pinv(A)[0].reshape((window_size, -1))
         Z = Z.astype('f')
         m = m.astype('f')
-<<<<<<< HEAD
         return sp.fftconvolve(Z, m, mode='valid')
-=======
-        return fftconvolve(Z, m, mode='valid')
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
     elif derivative == 'col':
         A = A.astype('f')
         c = np.linalg.pinv(A)[1].reshape((window_size, -1))
         Z = Z.astype('f')
-<<<<<<< HEAD
+
         return sp.fftconvolve(Z, -c, mode='valid')
-=======
-        return fftconvolve(Z, -c, mode='valid')
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
+
     elif derivative == 'row':
         A = A.astype('f')
         Z = Z.astype('f')
         r = np.linalg.pinv(A)[2].reshape((window_size, -1))
-<<<<<<< HEAD
+
         return sp.fftconvolve(Z, -r, mode='valid')
-=======
-        return fftconvolve(Z, -r, mode='valid')
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
+
     elif derivative == 'both':
         A = A.astype('f')
         Z = Z.astype('f')
         c = np.linalg.pinv(A)[1].reshape((window_size, -1))
         r = np.linalg.pinv(A)[2].reshape((window_size, -1))
-<<<<<<< HEAD
+
         return sp.fftconvolve(Z, -r, mode='valid'), sp.fftconvolve(Z, -c, mode='valid')
-=======
-        return fftconvolve(Z, -r, mode='valid'), fftconvolve(Z, -c, mode='valid')
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
 
 ################################################################
 def iseven(n):
@@ -268,13 +239,9 @@ def rescale(dat,mn,mx):
     """
     rescales an input dat between mn and mx
     """
-<<<<<<< HEAD
     m = min(dat.flatten())
     M = max(dat.flatten())
-=======
-    m=min(dat.flatten())
-    M=max(dat.flatten())
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
     return (mx-mn)*(dat-m)/(M-m)+mn
 
 ################################################################
@@ -283,11 +250,7 @@ def pad2nxtpow2(A,ny):
     zero pad numpy array up to next power 2
     """
     base2 = np.fix(np.log(ny)/np.log(2) + 0.4999)
-<<<<<<< HEAD
     Y = np.zeros((1,ny+(2**(base2+1)-ny)))
-=======
-    Y=np.zeros((1,ny+(2**(base2+1)-ny)))
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
     np.put(Y, np.arange(ny), A)
     return np.squeeze(Y)
 
@@ -341,7 +304,7 @@ class Cwt:
         scaling: Linear or log
         """
         ndata = len(data)
-<<<<<<< HEAD
+
         self.order = order
         self.scale = largestscale
         self._setscales(ndata,largestscale,notes,scaling)
@@ -349,30 +312,15 @@ class Cwt:
         omega = np.array(range(0,ndata/2)+range(-ndata/2,0))*(2.0*np.pi/ndata)
         datahat = np.fft.fft(data)
         self.fftdata = datahat
-=======
-        self.order=order
-        self.scale=largestscale
-        self._setscales(ndata,largestscale,notes,scaling)
-        self.cwt= np.zeros((self.nscale,ndata), np.complex64)
-        omega= np.array(range(0,ndata/2)+range(-ndata/2,0))*(2.0*np.pi/ndata)
-        datahat=np.fft.fft(data)
-        self.fftdata=datahat
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
         #self.psihat0=self.wf(omega*self.scales[3*self.nscale/4])
         # loop over scales and compute wvelet coeffiecients at each scale
         # using the fft to do the convolution
         for scaleindex in range(self.nscale):
-<<<<<<< HEAD
             currentscale = self.scales[scaleindex]
             self.currentscale = currentscale  # for internal use
             s_omega = omega*currentscale
             psihat = self.wf(s_omega)
-=======
-            currentscale=self.scales[scaleindex]
-            self.currentscale=currentscale  # for internal use
-            s_omega = omega*currentscale
-            psihat=self.wf(s_omega)
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
             psihat = psihat *  np.sqrt(2.0*np.pi*currentscale)
             convhat = psihat * datahat
             W    = np.fft.ifft(convhat)
@@ -389,7 +337,6 @@ class Cwt:
         if scaling=="log":
             if notes<=0: notes=1 
             # adjust nscale so smallest scale is 2 
-<<<<<<< HEAD
             noctave = self._log2( ndata/largestscale/2 )
             self.nscale = notes*noctave
             self.scales = np.zeros(self.nscale,float)
@@ -399,17 +346,6 @@ class Cwt:
             nmax = ndata/largestscale/2
             self.scales = np.arange(float(2),float(nmax))
             self.nscale = len(self.scales)
-=======
-            noctave=self._log2( ndata/largestscale/2 )
-            self.nscale=notes*noctave
-            self.scales=np.zeros(self.nscale,float)
-            for j in range(self.nscale):
-                self.scales[j] = ndata/(self.scale*(2.0**(float(self.nscale-1-j)/notes)))
-        elif scaling=="linear":
-            nmax=ndata/largestscale/2
-            self.scales=np.arange(float(2),float(nmax))
-            self.nscale=len(self.scales)
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
         else: raise ValueError, "scaling must be linear or log"
         return
  
@@ -451,7 +387,7 @@ class Morlet(Cwt):
     """
     Morlet wavelet
     """
-<<<<<<< HEAD
+
     _omega0 = 6.0 #5.0
     fourierwl = 4* np.pi/(_omega0+ np.sqrt(2.0+_omega0**2))
 
@@ -463,20 +399,7 @@ class Morlet(Cwt):
             if s_omega[i] < 0.0: H[i] = 0.0
         # !!!! note : was s_omega/8 before 17/6/03
         xhat = 0.75112554*( np.exp(-(s_omega-self._omega0)**2/2.0))*H
-=======
-    _omega0=6.0 #5.0
-    fourierwl=4* np.pi/(_omega0+ np.sqrt(2.0+_omega0**2))
 
-################################################################
-    def wf(self, s_omega):
-        H= np.ones(len(s_omega))
-        n=len(s_omega)
-        for i in range(len(s_omega)):
-            if s_omega[i] < 0.0: H[i]=0.0
-        # !!!! note : was s_omega/8 before 17/6/03
-        xhat=0.75112554*( np.exp(-(s_omega-self._omega0)**2/2.0))*H
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
-        return xhat
 
 ################################################################
 def processimage( item, density, doplot, resolution, folder ):
@@ -484,33 +407,18 @@ def processimage( item, density, doplot, resolution, folder ):
     main processing program which reads image and calculates grain size distribution
     """
     try:
-<<<<<<< HEAD
         im = Image.open(item).convert("L")
-=======
-        im=Image.open(item).convert("L")
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
     except IOError:
         print 'cannot open', item
         sys.exit(2)
 
     # crop a square box from centre of image
-<<<<<<< HEAD
     region = cropcentral(im)
 
     # convert to numpy array
     region = np.array(region)
-=======
-    region=cropcentral(im)
 
-    # convert to numpy array
-    region=np.array(region)
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
-    nx, ny = np.shape(region)
-
-    # resize image so it is half the size (to reduce computational time)
-    #useregion= np.array(imresize(region,(( nx/2, ny/2 )))).T
-    #nx, ny = np.shape(useregion)
-<<<<<<< HEAD
     mn = min(nx,ny)
 
     mult = 6*int(float(100*(1/np.std(region.flatten()))))
@@ -540,44 +448,11 @@ def processimage( item, density, doplot, resolution, folder ):
     npad = int(2**l2nx)
     k = np.r_[0.:np.fix(npad)/2]
     k = k*((2.*np.pi)/npad)
-=======
-    mn=min(nx,ny)
-
-    mult=6*int(float(100*(1/np.std(region.flatten()))))
-
-#    print 'filtering using window size ',window_size,' ... '
-    try:
-#        print "flattening ..."
-        if isodd(mn/4):
-             window_size=(mn/4)
-        else:
-             window_size=(mn/4)-1
-        Zf = sgolay2d( region, window_size, order=3)
-
-        # rescale filtered image to full 8-bit range
-        useregion =rescale(region-Zf,0,255)
-
-    except:
-        print "flattening failed"
-
-    wavelet=Morlet
-    maxscale=3
-    notes=8 # suboctaves per octave
-    #scaling="log" #or "linear"
-    scaling="log"
-
-    # for smoothing:
-    l2nx=np.ceil( np.log(float(ny))/ np.log(2.0)+0.0001 )
-    npad=int(2**l2nx)
-    k = r_[0.:np.fix(npad)/2]
-    k = k*((2.*pi)/npad)
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
     kr = -k[::-1]
     kr = kr[:np.asarray(np.fix((npad-1)/2), dtype=np.int)]
     k2 = np.hstack((0,k,kr))**2
 
     print 'analysing every ',density,' rows of a ',nx,' row image'
-<<<<<<< HEAD
     O1 = np.array([],np.float)
     for k in range(1,nx-1,density):
         # extract column from image
@@ -644,91 +519,16 @@ def processimage( item, density, doplot, resolution, folder ):
 
        mpl.subplot(222)
        Mim = mpl.imshow(region,cmap=mpl.cm.gray)
-=======
-    O1=np.array([],np.float)
-    for k in range(1,nx-1,density):
-        # extract column from image
-        A=column(np.asarray(useregion), k)
-        # detrend the data
-        A=scipy.signal.detrend(A)
-        # pad detrended series to next power 2 
-        Y=pad2nxtpow2(A,ny)
-        # Wavelet transform the data
-        cw=wavelet(Y,maxscale,notes,scaling=scaling)     
-        cwt=cw.getdata()
-        # get rid of padding before returning
-        cwt = cwt[:,0:ny] 
-        scales=cw.getscales()
-        # get scaled power spectrum
-        wave=np.tile(1/scales, (ny,1)).T*(np.absolute(cwt)**2)
-
-        # smooth
-        twave=np.zeros(np.shape(wave)) 
-        snorm=scales/1.
-        for ii in range(0,np.shape(wave)[0]):
-            F=np.exp(-.5*(snorm[ii]**2)*k2)
-            smooth=np.fft.ifft(np.squeeze(F)*np.squeeze(np.fft.fft(wave[ii,:],npad)))
-            twave[ii,:]=smooth[:ny].real
-
-        # store the variance of real part of the spectrum
-        dat=np.var(twave,axis=1)
-        dat=dat/sum(dat)
-        O1=np.append(O1,np.squeeze(dat.T)) 
-
-    Or1=np.reshape(O1, (-1,np.squeeze(np.shape(scales)))).T
-    # column-wise variance, scaled
-    varcwt1=np.var(Or1,axis=1) 
-    varcwt1=varcwt1/np.sum(varcwt1)
-    
-    #svarcwt = varcwt1
-    svarcwt=varcwt1*kaiser(len(varcwt1),mult)
-    svarcwt=svarcwt/np.sum(svarcwt)
-    
-    index=np.nonzero(scales<ny/3)
-    scales=scales[index]
-    svarcwt=svarcwt[index]
-    scales=scales*1.5
-
-    # get real scales by multiplying by resolution (mm/pixel)
-    scales=scales*resolution
-
-    mnsz=np.sum(svarcwt*scales)
-    print "mean size = ", mnsz 
-
-    srt= np.sqrt(np.sum(svarcwt*((scales-mnsz)**2)))
-    print "stdev = ",srt 
-
-    sk=(sum(svarcwt*((scales-mnsz)**3)))/(100*srt**3)
-    print "skewness = ",sk
-
-    kurt=(sum(svarcwt*((scales-mnsz)**4)))/(100*srt**4)
-    print "kurtosis = ",kurt
-
-    if doplot:
-       fig=mpl.figure(1)
-       mpl.subplot(221)
-       Mim=mpl.imshow(im,cmap=mpl.cm.gray)
-
-       mpl.subplot(222)
-       Mim=mpl.imshow(region,cmap=mpl.cm.gray)
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
 
        showim = Image.fromarray(np.uint8(region))
        size = min(showim.size)
        originX = np.round(showim.size[0] / 2 - size / 2)
        originY = np.round(showim.size[1] / 2 - size / 2)
        cropBox = (originX, originY, originX + np.asarray(mnsz*5,dtype='int'), originY + np.asarray(mnsz*5,dtype='int'))
-<<<<<<< HEAD
        showim = showim.crop(cropBox)
 
        mpl.subplot(223)
        Mim = mpl.imshow(showim,cmap=mpl.cm.gray)
-=======
-       showim=showim.crop(cropBox)
-
-       mpl.subplot(223)
-       Mim=mpl.imshow(showim,cmap=mpl.cm.gray)
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
 
        mpl.subplot(224)
        mpl.ylabel('Power')
@@ -756,14 +556,8 @@ def writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution ):
      np.savetxt(f, np.hstack((ascol(sz),ascol(pdf))), delimiter=', ', fmt='%s')   
     print 'psd results saved to ',item,'_psd.txt'
 
-<<<<<<< HEAD
     title = item+ "_summary.txt"
     fout = open(title,"w")
-=======
-    title=item+ "_summary.txt"
-    fout=open(title,"w")
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
-
     fout.write("%"+time.strftime('%l:%M%p %z on %b %d, %Y')+"\n") 
 
     fout.write("% grain size results ..."+"\n")
@@ -810,7 +604,6 @@ print "====IMAGE OF SEDIMENT/GRANULAR MATERIAL===="
 print "==========================================="
 print "======A PROGRAM BY DANIEL BUSCOMBE========="
 print "========USGS, FLAGSTAFF, ARIZONA==========="
-<<<<<<< HEAD
 print "=========REVISION 2.0, OCT 2013============"
 print "==========================================="
 
@@ -871,9 +664,6 @@ if not resolution:
 # special case = pwd
 if folder=='pwd':
    folder = os.getcwd()
-=======
-print "=========REVISION 1.2, APR 2012============"
-print "==========================================="
 
 # handle inputs
 if len(sys.argv) == 5: # all required arguments
@@ -917,10 +707,6 @@ elif len(sys.argv) ==4:
     resolution=1
     print 'Setting resolution to ', resolution
 
-# special case = pwd
-if folder=='pwd':
-   folder=os.getcwd()
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
 
 # if make plot
 if doplot:
@@ -930,7 +716,6 @@ if doplot:
       os.mkdir(folder+os.sep+"outputs")
 
 # cover all major file types
-<<<<<<< HEAD
 files1 = glob.glob(folder+os.sep+"*.JPG")
 files2 = glob.glob(folder+os.sep+"*.jpg")
 files3 = glob.glob(folder+os.sep+"*.jpeg")
@@ -940,17 +725,6 @@ files6 = glob.glob(folder+os.sep+"*.TIFF")
 files7 = glob.glob(folder+os.sep+"*.tiff")
 files8 = glob.glob(folder+os.sep+"*.PNG")
 files9 = glob.glob(folder+os.sep+"*.png")
-=======
-files1=glob.glob(folder+os.sep+"*.JPG")
-files2=glob.glob(folder+os.sep+"*.jpg")
-files3=glob.glob(folder+os.sep+"*.jpeg")
-files4=glob.glob(folder+os.sep+"*.TIF")
-files5=glob.glob(folder+os.sep+"*.tif")
-files6=glob.glob(folder+os.sep+"*.TIFF")
-files7=glob.glob(folder+os.sep+"*.tiff")
-files8=glob.glob(folder+os.sep+"*.PNG")
-files9=glob.glob(folder+os.sep+"*.png")
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
 
 # initiate counter for counting how many images there are
 count=0
@@ -961,99 +735,71 @@ if files1:
         print "Analysing "+item
         sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
-<<<<<<< HEAD
         count = count+1
-=======
-        count=count+1
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
 if files2:
    for item in files2:
         print "==========================================="
         print "Analysing "+item
         sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
-<<<<<<< HEAD
         count = count+1
-=======
-        count=count+1
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
 if files3:
    for item in files3:
         print "==========================================="
         print "Analysing "+item
         sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
-<<<<<<< HEAD
         count = count+1
-=======
-        count=count+1
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
 if files4:
    for item in files4:
         print "==========================================="
         print "Analysing "+item
         sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
-<<<<<<< HEAD
         count = count+1
-=======
-        count=count+1
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
 if files5:
    for item in files5:
         print "==========================================="
         print "Analysing "+item
         sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
-<<<<<<< HEAD
         count = count+1
-=======
-        count=count+1
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
 if files6:
    for item in files6:
         print "==========================================="
         print "Analysing "+item
         sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
-<<<<<<< HEAD
         count = count+1
-=======
-        count=count+1
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
 if files7:
    for item in files7:
         print "==========================================="
         print "Analysing "+item
         sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
-<<<<<<< HEAD
         count = count+1
-=======
-        count=count+1
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
 if files8:
    for item in files8:
         print "==========================================="
         print "Analysing "+item
         sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
-<<<<<<< HEAD
         count = count+1
-=======
-        count=count+1
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
+
 if files9:
    for item in files9:
         print "==========================================="
         print "Analysing "+item
         sz, pdf, mnsz, srt, sk, kurt = processimage( item, density, doplot, resolution, folder )
         writeout( item, sz, pdf, mnsz, srt, sk, kurt, resolution )
-<<<<<<< HEAD
         count = count+1
-=======
-        count=count+1
->>>>>>> 76b9a361fdf4a0d7328048a5dc02a559b8901ea2
 
 print "==========================================="
 if os.name=='posix': # true if linux/mac
