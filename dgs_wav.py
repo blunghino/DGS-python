@@ -1,5 +1,3 @@
-
-
 # dgs_wav.py
 # wavelet-based digital grain size analysis
 # Written by Daniel Buscombe, various times in 2012 and 2013
@@ -20,7 +18,6 @@
 #   For more information, see the official USGS copyright policy at 
 #   http://www.usgs.gov/visual-id/credit_usgs.html#copyright
 #====================================
-=======
 
 '''
  DGS_WAVE.PY
@@ -53,19 +50,16 @@ Sedimentology, in press. DOI: 10.1111/sed.12049
 
  EXAMPLES:
 
- 1) process present working directory using defaults
- python dgs_wav.py -f pwd 
-
- 2) process a folder somewhere on the computer
+ 1) process a folder somewhere on the computer
  python dgs_wav.py -f /home/my_sediment_images
 
- 3) process a folder with a sample density of 50
+ 2) process a folder with a sample density of 50
  python dgs_wav.py -f /home/my_sediment_images -d 50 
 
- 4) process a folder with a sample density of 100, and do a plot for each image 
+ 3) process a folder with a sample density of 100, and do a plot for each image 
  python dgs_wav.py -f /home/my_sediment_images -d 50 -p 1
 
- 5) process a folder with a sample density of 100, don't do a plot for each image, and use mm/pixel resolution 0.05 
+ 4) process a folder with a sample density of 100, don't do a plot for each image, and use mm/pixel resolution 0.05 
  python dgs_wav.py -f /home/my_sediment_images -d 50 -p 1 -r 0.05
 
  Note that the larger the density parameter, the longer the execution time. If a large density is required, please use the parallelised version of this code, dgs_wav_p.py which uses the joblib library. It should speed things up 10x or more if you have a number of processors 
@@ -104,7 +98,7 @@ Sedimentology, in press. DOI: 10.1111/sed.12049
            United States Geological Survey
            Flagstaff, AZ 86001
            dbuscombe@usgs.gov
- Version: 2.0      Revision: October, 2013
+ Version: 2.0      Revision: November, 2013
  First Revision January 18 2013   
 
 '''
@@ -118,6 +112,7 @@ import scipy.signal as sp # for polynomial fitting
 ################################################################
 ############## SUBFUNCTIONS ####################################
 ################################################################
+
 
 def column(matrix, i):
     """
@@ -198,31 +193,22 @@ def sgolay2d ( z, window_size, order, derivative=None):
         Z = Z.astype('f')
         m = m.astype('f')
         return sp.fftconvolve(Z, m, mode='valid')
-
     elif derivative == 'col':
         A = A.astype('f')
         c = np.linalg.pinv(A)[1].reshape((window_size, -1))
         Z = Z.astype('f')
-
         return sp.fftconvolve(Z, -c, mode='valid')
-
-
     elif derivative == 'row':
         A = A.astype('f')
         Z = Z.astype('f')
         r = np.linalg.pinv(A)[2].reshape((window_size, -1))
-
         return sp.fftconvolve(Z, -r, mode='valid')
-
-
     elif derivative == 'both':
         A = A.astype('f')
         Z = Z.astype('f')
         c = np.linalg.pinv(A)[1].reshape((window_size, -1))
         r = np.linalg.pinv(A)[2].reshape((window_size, -1))
-
         return sp.fftconvolve(Z, -r, mode='valid'), sp.fftconvolve(Z, -c, mode='valid')
-
 
 ################################################################
 def iseven(n):
@@ -241,7 +227,6 @@ def rescale(dat,mn,mx):
     """
     m = min(dat.flatten())
     M = max(dat.flatten())
-
     return (mx-mn)*(dat-m)/(M-m)+mn
 
 ################################################################
@@ -304,7 +289,6 @@ class Cwt:
         scaling: Linear or log
         """
         ndata = len(data)
-
         self.order = order
         self.scale = largestscale
         self._setscales(ndata,largestscale,notes,scaling)
@@ -312,7 +296,6 @@ class Cwt:
         omega = np.array(range(0,ndata/2)+range(-ndata/2,0))*(2.0*np.pi/ndata)
         datahat = np.fft.fft(data)
         self.fftdata = datahat
-
         #self.psihat0=self.wf(omega*self.scales[3*self.nscale/4])
         # loop over scales and compute wvelet coeffiecients at each scale
         # using the fft to do the convolution
@@ -387,7 +370,6 @@ class Morlet(Cwt):
     """
     Morlet wavelet
     """
-
     _omega0 = 6.0 #5.0
     fourierwl = 4* np.pi/(_omega0+ np.sqrt(2.0+_omega0**2))
 
@@ -399,6 +381,7 @@ class Morlet(Cwt):
             if s_omega[i] < 0.0: H[i] = 0.0
         # !!!! note : was s_omega/8 before 17/6/03
         xhat = 0.75112554*( np.exp(-(s_omega-self._omega0)**2/2.0))*H
+        return xhat
 
 
 ################################################################
@@ -419,6 +402,7 @@ def processimage( item, density, doplot, resolution, folder ):
     # convert to numpy array
     region = np.array(region)
 
+    nx, ny = np.shape(region)
     mn = min(nx,ny)
 
     mult = 6*int(float(100*(1/np.std(region.flatten()))))
@@ -660,53 +644,6 @@ if not doplot:
 if not resolution:
    resolution = 1
    print '[Default] Resolution is '+str(resolution)+' mm/pixel'
-
-# special case = pwd
-if folder=='pwd':
-   folder = os.getcwd()
-
-# handle inputs
-if len(sys.argv) == 5: # all required arguments
-    # read input folder
-    folder=sys.argv[1]
-    # read input sample density
-    density=int(float(sys.argv[2]))
-    # do plot?
-    doplot=int(float(sys.argv[3]))
-    # resolution (mm/pixel)
-    resolution=int(float(sys.argv[4]))
-
-elif len(sys.argv) ==2: #only folder input
-    # read input folder
-    folder=sys.argv[1]
-    density=200
-    doplot=0
-    resolution=1  
-    print 'Setting density to ', density
-    print 'No plot will be produced'
-    print 'Setting resolution to ', resolution
-
-elif len(sys.argv) ==3:
-    # read input folder
-    folder=sys.argv[1]
-    # read input sample density
-    density=int(float(sys.argv[2]))
-    doplot=0
-    resolution=1
-    print 'No plot will be produced'
-    print 'Setting resolution to ', resolution
-
-elif len(sys.argv) ==4:
-    # read input folder
-    folder=sys.argv[1]
-    # read input sample density
-    density=int(float(sys.argv[2]))
-    # do plot?
-    doplot=int(float(sys.argv[3]))
-    # resolution (mm/pixel)
-    resolution=1
-    print 'Setting resolution to ', resolution
-
 
 # if make plot
 if doplot:
